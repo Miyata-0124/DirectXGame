@@ -31,7 +31,7 @@ class GameScene {
 	/// 初期化
 	/// </summary>
 	void Initialize();
-
+	int32_t value_ = 0;
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
@@ -40,6 +40,10 @@ class GameScene {
 	/// <summary>
 	/// 描画
 	/// </summary>
+	//画像
+	Sprite* sprite_ = nullptr;
+	//3Dモデル
+	Model* model_ = nullptr;
 	void Draw();
 
   private: // メンバ変数
@@ -48,7 +52,13 @@ class GameScene {
 	Audio* audio_ = nullptr;
 	DebugText* debugText_ = nullptr;
 
+	uint32_t textureHandle_ = 0;
+
+	uint32_t soundDataHandle_ = 0;
+	uint32_t voiceHandle_ = 0;
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
+	WorldTransform worldTransform_;
+	ViewProjection viewProjection_;
 };
