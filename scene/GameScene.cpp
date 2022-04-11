@@ -6,10 +6,7 @@ using namespace DirectX;
 
 GameScene::GameScene() {}
 
-GameScene::~GameScene() {
-	delete sprite_;
-	delete model_;
-}
+GameScene::~GameScene() {}
 
 void GameScene::Initialize() {
 
@@ -17,35 +14,9 @@ void GameScene::Initialize() {
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 	debugText_ = DebugText::GetInstance();
-	//画像
-	textureHandle_ = TextureManager::Load("mario.jpg");
-	sprite_ = Sprite::Create(textureHandle_, {100, 50});
-	//3Dモデル
-	model_ = Model::Create();
-	worldTransform_.Initialize();
-	viewProjection_.Initialize();
-	//音
-	soundDataHandle_ = audio_->LoadWave("se_sad03.wav");
-	voiceHandle_ = audio_->PlayWave(soundDataHandle_, true);
 }
 
-void GameScene::Update() {
-	//座標
-	XMFLOAT2 position = sprite_->GetPosition();
-	position.x += 2.0f;
-	position.y += 1.0f;
-	sprite_->SetPosition(position);
-	//音声
-	if (input_->TriggerKey(DIK_SPACE)) {
-		audio_->StopWave(voiceHandle_);
-	}
-	//テキスト
-	/*debugText_->Print("Kaizokuou ni oreha naru", 50, 50, 1.0f);*/
-	value_++;
-	std::string strDebug = std::string("Value:") +
-	std::to_string(value_);
-	debugText_->Print(strDebug, 50, 50, 1.0f);
-}
+void GameScene::Update() {}
 
 void GameScene::Draw() {
 
@@ -55,10 +26,11 @@ void GameScene::Draw() {
 #pragma region 背景スプライト描画
 	// 背景スプライト描画前処理
 	Sprite::PreDraw(commandList);
-	
+
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
 	/// </summary>
+
 	// スプライト描画後処理
 	Sprite::PostDraw();
 	// 深度バッファクリア
@@ -68,10 +40,11 @@ void GameScene::Draw() {
 #pragma region 3Dオブジェクト描画
 	// 3Dオブジェクト描画前処理
 	Model::PreDraw(commandList);
+
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
@@ -79,10 +52,11 @@ void GameScene::Draw() {
 #pragma region 前景スプライト描画
 	// 前景スプライト描画前処理
 	Sprite::PreDraw(commandList);
+
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
-	sprite_->Draw();
+
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);
 	//
