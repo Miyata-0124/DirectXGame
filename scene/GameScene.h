@@ -22,7 +22,7 @@ class GameScene {
 	/// </summary>
 	GameScene();
 
-	WorldTransform worldTransform_;
+	WorldTransform worldTransform_[100];
 	ViewProjection viewProjection_;
 	Model* model_ = nullptr;
 	/// <summary>

@@ -1,6 +1,7 @@
 ﻿#include "GameScene.h"
 #include "TextureManager.h"
 #include <cassert>
+#include <random>
 
 using namespace DirectX;
 
@@ -17,19 +18,55 @@ void GameScene::Initialize() {
 
 	textureHandle_ = TextureManager::Load("mario.jpg");
 	model_ = Model::Create();
-	// x,y,z方向のスケーリング設定
-	worldTransform_.scale_ = {5.0f, 5.0f, 5.0f};
-	//x,y,z軸の回転角度を設定
-	worldTransform_.rotation_ = {XM_PI / 4.0f, XM_PI / 4.0f, 0.0f};
-	//x,y,z軸の平行移動設定
-	worldTransform_.translation_ = {10.0f, 10.0f, 10.0f};
-	//ワールドトランスフォームの初期化
-	worldTransform_.Initialize();
+	//乱数シード生成
+	std::random_device seed_gen;
+	//メルセンヌ・ツイスター
+	std::mt19937_64 engine(seed_gen());
+	//乱数範囲(回転角用)
+	std::uniform_real_distribution<float> rotDist(0.0f, XM_2PI);
+	//乱数範囲(座標用)
+	std::uniform_real_distribution<float> posDist(-10.0f, 10.0f);
+	for (int i = 0; i < _countof(worldTransform_);i++) {
+		// x,y,z方向のスケーリング設定
+		worldTransform_[i].scale_ = {1.0f, 1.0f, 1.0f};
+		// x,y,z軸の回転角度を設定
+		worldTransform_[i].rotation_ = {rotDist(engine), rotDist(engine), rotDist(engine)};
+		// x,y,z軸の平行移動設定
+		worldTransform_[i].translation_ = {posDist(engine), posDist(engine), posDist(engine)};
+		//ワールドトランスフォームの初期化
+		worldTransform_[i].Initialize();
+	}
+	//カメラ視点座標を設定
+	viewProjection_.target = {10, 0, 0};
+
+	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
-	
 }
 
-void GameScene::Update() {}
+void GameScene::Update() {
+	//視点移動処理
+	XMFLOAT3 move = {0, 0, 0};
+
+	//視点の移動速度
+	const float kEyeSpeed = 0.2f;
+
+	//押した方向で移動ベクトルを変更
+	if (input_->PushKey(DIK_W)) {
+		move = {0, 0, kEyeSpeed};
+	} else if (input_->PushKey(DIK_S)) {
+		move = {0, 0, -kEyeSpeed};
+	}
+	viewProjection_.eye.x += move.x;
+	viewProjection_.eye.y += move.y;
+	viewProjection_.eye.z += move.z;
+
+	//行列の再計算
+	viewProjection_.UpdateMatrix();
+	//デバッグ用表示
+	debugText_->SetPos(50, 50);
+	debugText_->Printf(
+	  "eye(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
+}
 
 void GameScene::Draw() {
 
@@ -57,7 +94,9 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+	for (size_t i = 0; i < _countof(worldTransform_); i++) {
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
+	}
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
@@ -72,19 +111,7 @@ void GameScene::Draw() {
 	
 	// デバッグテキストの描画
 	debugText_->DrawAll(commandList);
-	//座標表示
-	debugText_->SetPos(15.0, 15.0);
-	debugText_->Printf(
-	  "translation_:{%f,%f,%f}", worldTransform_.translation_.x, worldTransform_.translation_.y,
-	  worldTransform_.translation_.z);
-	debugText_->SetPos(15.0, 30.0);
-	debugText_->Printf(
-	  "rotation_:{%f,%f,%f}", worldTransform_.rotation_.x, worldTransform_.rotation_.y,
-	  worldTransform_.rotation_.z);
-	debugText_->SetPos(15.0, 45.0);
-	debugText_->Printf(
-	  "scale_:{%f,%f,%f}", worldTransform_.scale_.x, worldTransform_.scale_.y,
-	  worldTransform_.scale_.z);
+
 	//
 	// スプライト描画後処理
 	Sprite::PostDraw();
