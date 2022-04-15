@@ -37,7 +37,11 @@ void GameScene::Initialize() {
 		worldTransform_[i].Initialize();
 	}
 	//カメラ視点座標を設定
+	viewProjection_.eye = {0, 0, -10};
+	//注視点カメラ設定
 	viewProjection_.target = {10, 0, 0};
+	//上方向ベクトル設定
+	viewProjection_.up = {cosf(XM_PI / 4.0f), sinf(XM_PI / 4.0f), 0.0f};
 
 	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -59,13 +63,45 @@ void GameScene::Update() {
 	viewProjection_.eye.x += move.x;
 	viewProjection_.eye.y += move.y;
 	viewProjection_.eye.z += move.z;
+	//注視点速度
+	const float kTargetSpeed = 0.2f;
 
+	//押した方向で移動
+	if (input_->PushKey(DIK_LEFT)) {
+		move = {-kTargetSpeed, 0, 0};
+	} else if (input_->PushKey(DIK_RIGHT)) {
+		move = {kTargetSpeed, 0, 0};
+	}
+	viewProjection_.target.x += move.x;
+	viewProjection_.target.y += move.y;
+	viewProjection_.target.z += move.z;
+	//上方向の回転速度[ラジアン/frame]
+	const float kUpRotSpeed = 0.05f;
+	//押した方向で移送ベクトル変更
+	if (input_->PushKey(DIK_SPACE)) {
+
+		viewAngle += kUpRotSpeed;
+		//2πを超えたら0に戻す
+		viewAngle = fmodf(viewAngle, XM_2PI);
+	}
+	//上方向で移動ベクトル計算
+	viewProjection_.up = {cosf(viewAngle), sinf(viewAngle), 0.0f};
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
 	//デバッグ用表示
 	debugText_->SetPos(50, 50);
 	debugText_->Printf(
 	  "eye(%f,%f,%f)", viewProjection_.eye.x, viewProjection_.eye.y, viewProjection_.eye.z);
+	//デバッグ用表示
+	debugText_->SetPos(50, 70);
+	debugText_->Printf(
+	  "target(%f,%f,%f)", viewProjection_.target.x, viewProjection_.target.y,
+	  viewProjection_.target.z);
+	//デバッグ用表示
+	debugText_->SetPos(50, 90);
+	debugText_->Printf(
+	  "up(%f,%f,%f)", viewProjection_.up.x, viewProjection_.up.y,
+	  viewProjection_.up.z);
 }
 
 void GameScene::Draw() {

@@ -53,6 +53,8 @@ class GameScene {
 
 	uint32_t textureHandle_ = 0;
 
+	float viewAngle = 0.0f;
+
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
